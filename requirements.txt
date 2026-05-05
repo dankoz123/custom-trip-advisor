@@ -1,0 +1,8 @@
+crewai
+anthropic
+python-dotenv
+streamlit
+folium
+streamlit-folium
+resend
+twilio

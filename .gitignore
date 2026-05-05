@@ -1,0 +1,5 @@
+.env
+trip-env/
+__pycache__/
+*.pyc
+itinerary_*.txt

@@ -1,0 +1,192 @@
+{
+  "destination": "Ethiopia",
+  "start_date": "2026-05-05",
+  "end_date": "2026-05-10",
+  "total_days": 6,
+  "days": [
+    {
+      "day_number": 1,
+      "date": "2026-05-05",
+      "title": "Capital City Core",
+      "description": "Explore Addis Ababa's central museums and cathedrals within walking distance in the city center.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "National Museum of Ethiopia, Addis Ababa",
+          "duration_min": 120,
+          "source": "https://www.nationalmuseumethiopia.org",
+          "lat": 9.032,
+          "lon": 38.7469
+        },
+        {
+          "time": "11:00",
+          "place": "Holy Trinity Cathedral, Addis Ababa",
+          "duration_min": 90,
+          "source": "https://en.wikipedia.org/wiki/Holy_Trinity_Cathedral,_Addis_Ababa",
+          "lat": 9.0341,
+          "lon": 38.7502
+        },
+        {
+          "time": "12:30",
+          "place": "St. George's Cathedral, Addis Ababa",
+          "duration_min": 75,
+          "source": "https://en.wikipedia.org/wiki/St._George%27s_Cathedral,_Addis_Ababa",
+          "lat": 9.035,
+          "lon": 38.752
+        }
+      ]
+    },
+    {
+      "day_number": 2,
+      "date": "2026-05-06",
+      "title": "Markets and Periphery",
+      "description": "Complete Addis Ababa exploration with market district and ethnological museum in logical west-to-north flow.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Addis Ababa Railway Station, Addis Ababa",
+          "duration_min": 60,
+          "source": "https://en.wikipedia.org/wiki/Addis_Ababa_Railway_Station",
+          "lat": 9.025,
+          "lon": 38.74
+        },
+        {
+          "time": "10:00",
+          "place": "Merkato Market, Addis Ababa",
+          "duration_min": 120,
+          "source": "https://en.wikipedia.org/wiki/Merkato",
+          "lat": 9.028,
+          "lon": 38.735
+        },
+        {
+          "time": "12:00",
+          "place": "Ethnological Museum, Addis Ababa",
+          "duration_min": 100,
+          "source": "https://www.ethnologicalmuseum.org",
+          "lat": 9.033,
+          "lon": 38.748
+        }
+      ]
+    },
+    {
+      "day_number": 3,
+      "date": "2026-05-07",
+      "title": "Northern Historic Route",
+      "description": "Fly north to Axum and explore the UNESCO-listed ancient city with stelae, churches, and archaeological museum.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Axum Stelae Field, Axum",
+          "duration_min": 120,
+          "source": "https://whc.unesco.org/en/list/15/",
+          "lat": 14.1289,
+          "lon": 38.7269
+        },
+        {
+          "time": "11:00",
+          "place": "Church of St. Mary of Zion, Axum",
+          "duration_min": 90,
+          "source": "https://en.wikipedia.org/wiki/Church_of_St._Mary_of_Zion",
+          "lat": 14.131,
+          "lon": 38.728
+        },
+        {
+          "time": "12:30",
+          "place": "Axum Archaeological Museum, Axum",
+          "duration_min": 90,
+          "source": "https://en.wikipedia.org/wiki/Axum_Archaeological_Museum",
+          "lat": 14.1295,
+          "lon": 38.7275
+        }
+      ]
+    },
+    {
+      "day_number": 4,
+      "date": "2026-05-08",
+      "title": "South Through Amhara",
+      "description": "Travel south to Lalibela and explore the UNESCO rock-hewn churches within the compact ancient site.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Church of St. George—Bete Giyorgis, Lalibela",
+          "duration_min": 120,
+          "source": "https://whc.unesco.org/en/list/18/",
+          "lat": 12.0305,
+          "lon": 39.0449
+        },
+        {
+          "time": "11:00",
+          "place": "Church of Mary—Bete Maryam, Lalibela",
+          "duration_min": 90,
+          "source": "https://en.wikipedia.org/wiki/Bete_Maryam",
+          "lat": 12.031,
+          "lon": 39.0445
+        },
+        {
+          "time": "12:30",
+          "place": "Church of Gabriel-Raphael—Bete Merkurios, Lalibela",
+          "duration_min": 75,
+          "source": "https://en.wikipedia.org/wiki/Lalibela",
+          "lat": 12.0325,
+          "lon": 39.0455
+        }
+      ]
+    },
+    {
+      "day_number": 5,
+      "date": "2026-05-09",
+      "title": "Continuing South",
+      "description": "Travel to Gondar and discover the royal castles, churches with frescoes, and palaces within the UNESCO fortress complex.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Fasilides Castle—Royal Enclosure, Gondar",
+          "duration_min": 120,
+          "source": "https://whc.unesco.org/en/list/29/",
+          "lat": 12.5833,
+          "lon": 37.4667
+        },
+        {
+          "time": "11:00",
+          "place": "Debre Berhan Selassie Church, Gondar",
+          "duration_min": 90,
+          "source": "https://en.wikipedia.org/wiki/Debre_Berhan_Selassie",
+          "lat": 12.585,
+          "lon": 37.47
+        },
+        {
+          "time": "12:30",
+          "place": "Qusquam Palace, Gondar",
+          "duration_min": 75,
+          "source": "https://en.wikipedia.org/wiki/Gondar",
+          "lat": 12.584,
+          "lon": 37.468
+        }
+      ]
+    },
+    {
+      "day_number": 6,
+      "date": "2026-05-10",
+      "title": "Eastern Descent",
+      "description": "Travel east to Harar and experience the ancient walled city with its 82 mosques and vibrant spice bazaar.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Harar Walled City—UNESCO Site, Harar",
+          "duration_min": 150,
+          "source": "https://whc.unesco.org/en/list/1189/",
+          "lat": 9.315,
+          "lon": 42.1833
+        },
+        {
+          "time": "11:30",
+          "place": "Harar Market and Spice Bazaar, Harar",
+          "duration_min": 120,
+          "source": "https://en.wikipedia.org/wiki/Harar",
+          "lat": 9.314,
+          "lon": 42.184
+        }
+      ]
+    }
+  ]
+}

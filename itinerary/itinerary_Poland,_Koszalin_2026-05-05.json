@@ -1,0 +1,184 @@
+{
+  "destination": "Poland, Koszalin",
+  "start_date": "2026-05-05",
+  "end_date": "2026-05-08",
+  "total_days": 4,
+  "days": [
+    {
+      "day_number": 1,
+      "date": "2026-05-05",
+      "title": "Koszalin City Center & Waterfront",
+      "description": "Explore Koszalin's compact downtown and coastal zone with historic landmarks and cultural museums.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Koszalin Market Square (Rynek), Koszalin",
+          "duration_min": 55,
+          "source": "https://en.wikipedia.org/wiki/Koszalin",
+          "lat": 54.1904,
+          "lon": 15.5793
+        },
+        {
+          "time": "10:00",
+          "place": "Koszalin Town Hall (Ratusz), Koszalin",
+          "duration_min": 40,
+          "source": "https://en.wikipedia.org/wiki/Koszalin",
+          "lat": 54.1906,
+          "lon": 15.5795
+        },
+        {
+          "time": "10:50",
+          "place": "Koszalin Cathedral (Katedra św. Maryi Magdaleny), Koszalin",
+          "duration_min": 45,
+          "source": "https://en.wikipedia.org/wiki/Koszalin_Cathedral",
+          "lat": 54.1915,
+          "lon": 15.5801
+        },
+        {
+          "time": "11:50",
+          "place": "Museum of Pomerania (Muzeum Pomerania), Koszalin",
+          "duration_min": 120,
+          "source": "https://www.muzeum.koszalin.pl/",
+          "lat": 54.192,
+          "lon": 15.581
+        },
+        {
+          "time": "13:50",
+          "place": "Koszalin Park (Park Miejski), Koszalin",
+          "duration_min": 40,
+          "source": "https://en.wikipedia.org/wiki/Koszalin",
+          "lat": 54.188,
+          "lon": 15.585
+        }
+      ]
+    },
+    {
+      "day_number": 2,
+      "date": "2026-05-06",
+      "title": "Koszalin Leisure & Botanical Attractions",
+      "description": "Discover Koszalin's recreational and nature-based sites including botanical gardens and seaside promenade.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Koszalin Botanical Garden, Koszalin",
+          "duration_min": 90,
+          "source": "https://en.wikipedia.org/wiki/Koszalin",
+          "lat": 54.185,
+          "lon": 15.59
+        },
+        {
+          "time": "10:35",
+          "place": "Koszalin Seaside Promenade (Molo w Koszalinie), Koszalin",
+          "duration_min": 75,
+          "source": "https://en.wikipedia.org/wiki/Koszalin",
+          "lat": 54.175,
+          "lon": 15.595
+        },
+        {
+          "time": "11:55",
+          "place": "Pomeranian Ethnographic Museum, Koszalin",
+          "duration_min": 100,
+          "source": "https://www.muzeum.koszalin.pl/",
+          "lat": 54.19,
+          "lon": 15.588
+        },
+        {
+          "time": "13:40",
+          "place": "Koszalin Aquapark, Koszalin",
+          "duration_min": 30,
+          "source": "https://en.wikipedia.org/wiki/Koszalin",
+          "lat": 54.182,
+          "lon": 15.592
+        }
+      ]
+    },
+    {
+      "day_number": 3,
+      "date": "2026-05-07",
+      "title": "Darłowo Coastal Cluster",
+      "description": "Experience Darłowo's charming old town, religious sites, fishing harbor, and scenic waterfront.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Darłowo Old Town (Stare Miasto), Darłowo",
+          "duration_min": 85,
+          "source": "https://en.wikipedia.org/wiki/Dar%C5%82owo",
+          "lat": 54.26,
+          "lon": 16.38
+        },
+        {
+          "time": "10:30",
+          "place": "St. Mary's Church in Darłowo, Darłowo",
+          "duration_min": 50,
+          "source": "https://en.wikipedia.org/wiki/Dar%C5%82owo",
+          "lat": 54.261,
+          "lon": 16.381
+        },
+        {
+          "time": "11:25",
+          "place": "Darłowo Fishing Harbor, Darłowo",
+          "duration_min": 65,
+          "source": "https://en.wikipedia.org/wiki/Dar%C5%82owo",
+          "lat": 54.255,
+          "lon": 16.385
+        },
+        {
+          "time": "12:35",
+          "place": "Darłowo Beach and Waterfront, Darłowo",
+          "duration_min": 75,
+          "source": "https://en.wikipedia.org/wiki/Dar%C5%82owo",
+          "lat": 54.25,
+          "lon": 16.39
+        },
+        {
+          "time": "13:55",
+          "place": "Lighthouse in Darłowo, Darłowo",
+          "duration_min": 20,
+          "source": "https://en.wikipedia.org/wiki/Dar%C5%82owo",
+          "lat": 54.248,
+          "lon": 16.392
+        }
+      ]
+    },
+    {
+      "day_number": 4,
+      "date": "2026-05-08",
+      "title": "Słupsk Cultural & Artistic Circuit",
+      "description": "Conclude the journey exploring Słupsk's castle, museums, and contemporary art venues.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Słupsk Castle (Zamek w Słupsku), Słupsk",
+          "duration_min": 110,
+          "source": "https://en.wikipedia.org/wiki/S%C5%82upsk_Castle",
+          "lat": 54.46,
+          "lon": 17.03
+        },
+        {
+          "time": "10:55",
+          "place": "Pomeranian Museum in Słupsk, Słupsk",
+          "duration_min": 100,
+          "source": "https://www.muzeum.slupsk.pl/",
+          "lat": 54.461,
+          "lon": 17.031
+        },
+        {
+          "time": "12:40",
+          "place": "Słupsk Museum of Contemporary Art, Słupsk",
+          "duration_min": 60,
+          "source": "https://www.muzeum.slupsk.pl/",
+          "lat": 54.462,
+          "lon": 17.032
+        },
+        {
+          "time": "13:45",
+          "place": "Słupsk Riverfront Walk, Słupsk",
+          "duration_min": 30,
+          "source": "https://en.wikipedia.org/wiki/S%C5%82upsk",
+          "lat": 54.463,
+          "lon": 17.033
+        }
+      ]
+    }
+  ]
+}

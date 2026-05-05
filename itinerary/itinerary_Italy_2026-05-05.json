@@ -1,0 +1,72 @@
+{
+  "destination": "Italy",
+  "start_date": "2026-05-05",
+  "end_date": "2026-05-05",
+  "total_days": 1,
+  "days": [
+    {
+      "day_number": 1,
+      "date": "2026-05-05",
+      "title": "Rome Historic Center & Vatican Circuit",
+      "description": "Explore Rome's ancient monuments and Renaissance treasures in a single northwest-sweeping arc from the Colosseum through the historic center to Castel Sant'Angelo.",
+      "attractions": [
+        {
+          "time": "08:00",
+          "place": "Colosseum (Flavian Amphitheatre), Rome",
+          "duration_min": 120,
+          "source": "https://www.colosseum.it/",
+          "lat": 41.8902,
+          "lon": 12.4924
+        },
+        {
+          "time": "10:05",
+          "place": "Roman Forum, Rome",
+          "duration_min": 90,
+          "source": "https://www.forumromano.com/",
+          "lat": 41.8925,
+          "lon": 12.4858
+        },
+        {
+          "time": "11:35",
+          "place": "Pantheon, Rome",
+          "duration_min": 60,
+          "source": "https://www.pantheonroma.com/",
+          "lat": 41.8986,
+          "lon": 12.4769
+        },
+        {
+          "time": "12:35",
+          "place": "Palazzo Altemps, Rome",
+          "duration_min": 75,
+          "source": "https://www.museiinroma.it/en/palazzo-altemps",
+          "lat": 41.901,
+          "lon": 12.4733
+        },
+        {
+          "time": "13:50",
+          "place": "Trevi Fountain, Rome",
+          "duration_min": 30,
+          "source": "https://www.trevisquare.net/",
+          "lat": 41.9009,
+          "lon": 12.4833
+        },
+        {
+          "time": "14:20",
+          "place": "Spanish Steps, Rome",
+          "duration_min": 45,
+          "source": "https://www.spanishstepsrome.com/",
+          "lat": 41.9061,
+          "lon": 12.4737
+        },
+        {
+          "time": "15:05",
+          "place": "Castel Sant'Angelo, Rome",
+          "duration_min": 60,
+          "source": "https://www.castelsantangelo.beniculturali.it/",
+          "lat": 41.9029,
+          "lon": 12.4664
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "destination": "Poland",
+  "start_date": "2026-06-06",
+  "end_date": "2026-06-10",
+  "total_days": 5,
+  "days": [
+    {
+      "day_number": 1,
+      "date": "2026-06-06",
+      "title": "Warsaw's Historic Heart",
+      "description": "Explore Warsaw's iconic Old Town, royal palaces, and museums documenting the city's rich and turbulent history.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Warsaw Old Town (Stare Miasto), Warsaw",
+          "duration_min": 120,
+          "source": "https://www.warsaw.pl/en/attractions/old-town"
+        },
+        {
+          "time": "11:30",
+          "place": "Royal Castle (Pałac Królewski), Warsaw",
+          "duration_min": 90,
+          "source": "https://www.zamek-krolewski.pl/en"
+        },
+        {
+          "time": "13:30",
+          "place": "Warsaw Uprising Museum (Muzeum Powstania Warszawskiego), Warsaw",
+          "duration_min": 120,
+          "source": "https://www.1944.pl/en"
+        }
+      ]
+    },
+    {
+      "day_number": 2,
+      "date": "2026-06-07",
+      "title": "Warsaw's Cultural Treasures",
+      "description": "Discover Warsaw's world-class museums, memorials, and palaces showcasing Polish art, science, and Jewish heritage.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "National Museum in Warsaw (Muzeum Narodowe w Warszawie), Warsaw",
+          "duration_min": 120,
+          "source": "https://www.mnw.art.pl/en"
+        },
+        {
+          "time": "11:30",
+          "place": "Warsaw Ghetto Memorial (Pomnik Bohaterów Getta), Warsaw",
+          "duration_min": 45,
+          "source": "https://www.jewishmuseum.org.pl/en/warsaw-ghetto-memorial"
+        },
+        {
+          "time": "13:30",
+          "place": "Copernicus Science Centre (Centrum Nauki Kopernik), Warsaw",
+          "duration_min": 120,
+          "source": "https://www.kopernik.org.pl/en"
+        }
+      ]
+    },
+    {
+      "day_number": 3,
+      "date": "2026-06-08",
+      "title": "Journey to Kraków",
+      "description": "Travel to Kraków and immerse yourself in the medieval charm of the Main Market Square, royal castle, and historic Kazimierz district.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Kraków Main Market Square (Rynek Główny), Kraków",
+          "duration_min": 90,
+          "source": "https://www.krakow.pl/en/attractions/main-market-square"
+        },
+        {
+          "time": "11:00",
+          "place": "St. Mary's Basilica (Bazylika Mariacka), Kraków",
+          "duration_min": 45,
+          "source": "https://www.mariacka.org/en"
+        },
+        {
+          "time": "12:30",
+          "place": "Wawel Royal Castle (Zamek Królewski na Wawelu), Kraków",
+          "duration_min": 120,
+          "source": "https://www.wawel.krakow.pl/en"
+        },
+        {
+          "time": "15:00",
+          "place": "Kazimierz District (Dzielnica Kazimierz), Kraków",
+          "duration_min": 120,
+          "source": "https://www.krakow.pl/en/attractions/kazimierz"
+        }
+      ]
+    },
+    {
+      "day_number": 4,
+      "date": "2026-06-09",
+      "title": "Auschwitz-Birkenau Memorial",
+      "description": "Pay solemn respects at the Auschwitz-Birkenau Memorial and Museum, one of history's most important Holocaust sites.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Auschwitz I Main Camp, Oświęcim",
+          "duration_min": 120,
+          "source": "https://www.auschwitz.org/en/visiting/auschwitz-i"
+        },
+        {
+          "time": "11:30",
+          "place": "Birkenau Camp (Auschwitz II), Oświęcim",
+          "duration_min": 120,
+          "source": "https://www.auschwitz.org/en/visiting/auschwitz-ii-birkenau"
+        }
+      ]
+    },
+    {
+      "day_number": 5,
+      "date": "2026-06-10",
+      "title": "Kraków's Jewish Heritage & Hidden Depths",
+      "description": "Explore Kraków's profound Jewish history through Schindler's Factory, underground museums, and historic synagogues in the Kazimierz quarter.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Schindler's Factory (Fabryka Schindlera), Kraków",
+          "duration_min": 120,
+          "source": "https://www.schindlersfactory.com/en"
+        },
+        {
+          "time": "11:30",
+          "place": "Kraków Underground Museum (Muzeum Podziemia Rynku Głównego), Kraków",
+          "duration_min": 90,
+          "source": "https://www.podziemia.pl/en"
+        },
+        {
+          "time": "13:30",
+          "place": "Remuh Synagogue and Cemetery (Synagoga Remuh), Kraków",
+          "duration_min": 60,
+          "source": "https://www.krakow.pl/en/attractions/remuh-synagogue"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "destination": "germany",
+  "start_date": "2026-05-03",
+  "end_date": "2026-05-03",
+  "total_days": 1,
+  "days": [
+    {
+      "day_number": 1,
+      "date": "2026-05-03",
+      "title": "Berlin City Center & Potsdam Palace Tour",
+      "description": "Explore Berlin's iconic landmarks from the Brandenburg Gate through Museum Island, then venture south to Potsdam's magnificent Sanssouci Palace before returning to the East Side Gallery.",
+      "attractions": [
+        {
+          "time": "09:00",
+          "place": "Brandenburg Gate, Berlin",
+          "duration_min": 45,
+          "source": "https://www.visitberlin.de/en/brandenburg-gate",
+          "lat": 52.5163,
+          "lon": 13.3777
+        },
+        {
+          "time": "09:50",
+          "place": "Reichstag Building, Berlin",
+          "duration_min": 90,
+          "source": "https://www.bundestag.de/en/visits",
+          "lat": 52.5186,
+          "lon": 13.376
+        },
+        {
+          "time": "11:25",
+          "place": "Museum Island (Museumsinsel), Berlin",
+          "duration_min": 150,
+          "source": "https://www.smb.museum/en/museums/museum-island/",
+          "lat": 52.521,
+          "lon": 13.3975
+        },
+        {
+          "time": "13:55",
+          "place": "Travel to Sanssouci Palace, Potsdam",
+          "duration_min": 30,
+          "source": "https://www.potsdam-tourism.de/en/",
+          "lat": 52.405,
+          "lon": 13.0392
+        },
+        {
+          "time": "14:25",
+          "place": "Sanssouci Palace, Potsdam",
+          "duration_min": 100,
+          "source": "https://www.spsg.de/en/palaces-gardens/sanssouci/",
+          "lat": 52.405,
+          "lon": 13.0392
+        },
+        {
+          "time": "15:45",
+          "place": "Return travel to Berlin",
+          "duration_min": 30,
+          "source": "https://www.visitberlin.de/en/",
+          "lat": 52.52,
+          "lon": 13.405
+        },
+        {
+          "time": "16:15",
+          "place": "East Side Gallery, Berlin",
+          "duration_min": 95,
+          "source": "https://www.eastsidegallery-berlin.de/en/",
+          "lat": 52.505,
+          "lon": 13.442
+        }
+      ]
+    }
+  ]
+}
