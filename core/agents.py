@@ -1,8 +1,7 @@
 from crewai import Agent
-from core.config import llm
 
 
-def make_researcher(destination: str) -> Agent:
+def make_researcher(destination: str, llm) -> Agent:
     return Agent(
         role="Travel Researcher",
         goal=(
@@ -20,7 +19,7 @@ def make_researcher(destination: str) -> Agent:
     )
 
 
-def make_optimizer(destination: str, explore_days: int, hours_per_day: float) -> Agent:
+def make_optimizer(destination: str, explore_days: int, hours_per_day: float, llm) -> Agent:
     max_min = int(hours_per_day * 60)
     min_min = int(max_min * 0.9)
     return Agent(
@@ -45,7 +44,7 @@ def make_optimizer(destination: str, explore_days: int, hours_per_day: float) ->
     )
 
 
-def make_planner(destination: str, explore_days: int, start_date: str, hours_per_day: float) -> Agent:
+def make_planner(destination: str, explore_days: int, start_date: str, hours_per_day: float, llm) -> Agent:
     max_min = int(hours_per_day * 60)
     min_min = int(max_min * 0.9)
     return Agent(

@@ -12,7 +12,8 @@ from crewai import Crew, Process
 
 import time as _time
 
-from core.config import MODEL
+from crewai import LLM
+from core.config import MODEL, ANTHROPIC_API_KEY
 from core.email_sender import send_itinerary_email
 from core.sms_sender import send_itinerary_sms
 
@@ -383,9 +384,10 @@ def run_crew(destination: str, start_dt: datetime, end_dt: datetime,
     END_DATE   = end_dt.strftime("%Y-%m-%d")
     date_range = [(start_dt + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(explore)]
 
-    researcher        = make_researcher(destination)
-    optimizer         = make_optimizer(destination, explore, hours_per_day)
-    planner           = make_planner(destination, explore, START_DATE, hours_per_day)
+    llm = LLM(model=MODEL, temperature=0.3, max_tokens=16000)
+    researcher        = make_researcher(destination, llm)
+    optimizer         = make_optimizer(destination, explore, hours_per_day, llm)
+    planner           = make_planner(destination, explore, START_DATE, hours_per_day, llm)
     research_task     = make_research_task(researcher, destination, explore, date_range, hours_per_day)
     optimization_task = make_optimization_task(optimizer, research_task, destination, explore, hours_per_day)
     planning_task     = make_planning_task(
