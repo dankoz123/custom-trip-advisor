@@ -2,8 +2,6 @@
 
 A multi-AI-agent travel planner built with **CrewAI** and **Claude Haiku**. Enter a destination and travel dates, and three specialised agents (Researcher → Route Optimizer → Planner) collaborate to produce a structured day-by-day itinerary with real road routing, interactive maps, and optional email delivery.
 
-https://github.com/dankoz123/custom-trip-advisor/raw/main/assets/demo.mp4
-
 ---
 
 ## Features
