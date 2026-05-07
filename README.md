@@ -7,7 +7,7 @@ A multi-AI-agent travel planner built with **CrewAI** and **Claude Haiku**. Ente
 ## Recording
 
 <video src="https://github.com/dankoz123/custom-trip-advisor/assets/demo.mp4" controls width="800"></video>
-[![Demo](https://img.shields.io/badge/▶_Watch_Demo-blue)](https://github.com/dankoz123/custom-trip-advisor/assets/demo.mp4)
+[![Demo](https://img.shields.io/badge/▶_Watch_Demo-blue)](https://github.com/dankoz123/custom-trip-advisor/tree/main/assets/demo.mp4)
 
 ---
 
