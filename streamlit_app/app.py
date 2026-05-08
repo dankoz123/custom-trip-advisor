@@ -16,6 +16,7 @@ from crewai import LLM
 from core.config import MODEL, ANTHROPIC_API_KEY
 from core.email_sender import send_itinerary_email
 from core.sms_sender import send_itinerary_sms
+from core.guard import validate_destination
 
 
 def show_banner(message: str, level: str = "success") -> None:
@@ -424,37 +425,42 @@ if generate:
     elif explore_days is None:
         st.error("Please select valid dates first.")
     else:
-        start_dt = datetime.combine(start_date, datetime.min.time())
-        end_dt   = datetime.combine(end_date,   datetime.min.time())
+        with st.spinner("Validating destination…"):
+            is_valid, reason = validate_destination(destination)
+        if not is_valid:
+            st.error(f'"{destination}" is not a valid travel destination: {reason}')
+        else:
+            start_dt = datetime.combine(start_date, datetime.min.time())
+            end_dt   = datetime.combine(end_date,   datetime.min.time())
 
-        st.session_state.pop("usage", None)
+            st.session_state.pop("usage", None)
 
-        with st.spinner(f"Planning your {explore_days}-day trip to {destination}…"):
-            last_error = None
-            for attempt in range(1, 4):
-                try:
-                    itinerary, usage = run_crew(destination, start_dt, end_dt, explore_days, hours_per_day)
-                    itinerary = trim_to_visit_budget(itinerary, hours_per_day)
-                    routes = fetch_all_routes(itinerary)
-                    save_map(itinerary, routes)
-                    last_error = None
-                    break
-                except Exception as e:
-                    last_error = e
-                    if attempt < 3:
-                        st.toast(f"Attempt {attempt} failed, retrying…")
-            if last_error:
-                st.error(f"Could not generate itinerary after 3 attempts: {last_error}")
-                st.stop()
+            with st.spinner(f"Planning your {explore_days}-day trip to {destination}…"):
+                last_error = None
+                for attempt in range(1, 4):
+                    try:
+                        itinerary, usage = run_crew(destination, start_dt, end_dt, explore_days, hours_per_day)
+                        itinerary = trim_to_visit_budget(itinerary, hours_per_day)
+                        routes = fetch_all_routes(itinerary)
+                        save_map(itinerary, routes)
+                        last_error = None
+                        break
+                    except Exception as e:
+                        last_error = e
+                        if attempt < 3:
+                            st.toast(f"Attempt {attempt} failed, retrying…")
+                if last_error:
+                    st.error(f"Could not generate itinerary after 3 attempts: {last_error}")
+                    st.stop()
 
-        st.session_state["itinerary"] = itinerary
-        st.session_state["usage"]     = usage
-        st.session_state["routes"]    = routes
+            st.session_state["itinerary"] = itinerary
+            st.session_state["usage"]     = usage
+            st.session_state["routes"]    = routes
 
-        output_file = f"itinerary_{destination.replace(' ', '_')}_{start_date}.json"
-        itinerary_dir = Path(__file__).parent.parent / "itinerary"
-        itinerary_dir.mkdir(exist_ok=True)
-        (itinerary_dir / output_file).write_text(itinerary.model_dump_json(indent=2))
+            output_file = f"itinerary_{destination.replace(' ', '_')}_{start_date}.json"
+            itinerary_dir = Path(__file__).parent.parent / "itinerary"
+            itinerary_dir.mkdir(exist_ok=True)
+            (itinerary_dir / output_file).write_text(itinerary.model_dump_json(indent=2))
 
 # ── Notification banner ────────────────────────────────────────────────────────
 _banner_slot = st.empty()
