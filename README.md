@@ -6,7 +6,7 @@ A multi-AI-agent travel planner built with **CrewAI** and **Claude Haiku**. Ente
 
 ## Demo
 
-![Demo](assets/demo.gif)
+![Demo](assets/demo-08052026.gif)
 
 ---
 
