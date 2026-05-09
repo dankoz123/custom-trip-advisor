@@ -6,3 +6,6 @@ folium
 streamlit-folium
 resend
 twilio
+fastapi
+uvicorn
+faster-whisper

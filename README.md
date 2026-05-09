@@ -19,6 +19,8 @@ A multi-AI-agent travel planner built with **CrewAI** and **Claude Haiku**. Ente
 - Save generated itineraries as JSON and reload them later
 - Send the itinerary summary by email (Resend API)
 - Streamlit web UI
+- REST API (FastAPI) — full itinerary pipeline exposed as API endpoints
+- Speech-to-text (FastAPI only) — transcribe spoken destination via microphone using Whisper
 
 ---
 
@@ -90,12 +92,19 @@ pip install -r requirements.txt
 
 Copy the template from the [Requirements](#api-keys-and-credentials) section above and fill in your credentials.
 
-**5. Run the app**
+**5. Run the Streamlit app**
 ```bash
 streamlit run streamlit_app/app.py
 ```
 
 The app will open automatically in your browser at `http://localhost:8501`.
+
+**5b. Run the FastAPI server** *(optional)*
+```bash
+uvicorn fastapi_app.main:app --reload
+```
+
+The API and interactive docs will be available at `http://localhost:8000/docs`.
 
 ---
 
@@ -103,22 +112,26 @@ The app will open automatically in your browser at `http://localhost:8501`.
 
 ```
 .
-├── core/
-│   ├── agents.py          # CrewAI agent definitions
-│   ├── tasks.py           # CrewAI task definitions
-│   ├── models.py          # Pydantic output models (Itinerary, Day, Attraction)
-│   ├── config.py          # Loads .env and creates the LLM instance
-│   ├── guard.py           # Destination validation using Claude Haiku
-│   ├── email_sender.py    # Resend email integration
-│   └── sms_sender.py      # Twilio SMS integration
+├── core/                        # Shared business logic — used by both Streamlit and FastAPI
+│   ├── agents.py                # CrewAI agent definitions
+│   ├── tasks.py                 # CrewAI task definitions
+│   ├── models.py                # Pydantic output models (Itinerary, Day, Attraction)
+│   ├── config.py                # Loads .env and creates the LLM instance
+│   ├── guard.py                 # Destination validation using Claude Haiku
+│   ├── transcriber.py           # Speech-to-text using Faster Whisper
+│   ├── email_sender.py          # Resend email integration
+│   └── sms_sender.py            # Twilio SMS integration
 ├── streamlit_app/
-│   └── app.py             # Streamlit web UI
-├── itinerary/             # Saved itineraries (JSON) — git-ignored by default
+│   └── app.py                   # Streamlit web UI
+├── fastapi_app/
+│   ├── main.py                  # FastAPI routes
+│   └── schemas.py               # API request/response models
+├── itinerary/                   # Saved itineraries (JSON) — git-ignored by default
 ├── .streamlit/
-│   └── config.toml        # Enables static file serving for the map
-├── main.py                # CLI entry point (alternative to the Streamlit UI)
+│   └── config.toml              # Enables static file serving for the map
+├── main.py                      # CLI entry point (alternative to the Streamlit UI)
 ├── requirements.txt
-└── .env                   # Your credentials — never committed
+└── .env                         # Your credentials — never committed
 ```
 
 ---
@@ -132,6 +145,21 @@ The app will open automatically in your browser at `http://localhost:8501`.
 
 ---
 
+## API endpoints
+
+The FastAPI server exposes the full pipeline as a REST API. Interactive docs at `http://localhost:8000/docs`.
+
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/validate` | Validate a destination name |
+| `POST` | `/generate` | Generate and save an itinerary |
+| `GET` | `/itineraries` | List all saved itineraries |
+| `GET` | `/itineraries/{filename}` | Load a specific itinerary |
+| `POST` | `/itineraries/{filename}/email` | Email a saved itinerary |
+| `POST` | `/transcribe` | Transcribe an audio file to text |
+
+---
+
 ## Technology stack
 
 | Component | Technology |
@@ -140,5 +168,7 @@ The app will open automatically in your browser at `http://localhost:8501`.
 | Language model | Claude Haiku via [Anthropic API](https://www.anthropic.com) — itinerary generation and destination validation |
 | Maps & routing | [Folium](https://python-visualization.github.io/folium/) + [OSRM](http://project-osrm.org/) |
 | Web UI | [Streamlit](https://streamlit.io) |
+| REST API | [FastAPI](https://fastapi.tiangolo.com) + [Uvicorn](https://www.uvicorn.org) |
+| Speech-to-text | [Faster Whisper](https://github.com/SYSTRAN/faster-whisper) (local, no API key required) |
 | Email | [Resend](https://resend.com) |
 | SMS | [Twilio](https://www.twilio.com) |
