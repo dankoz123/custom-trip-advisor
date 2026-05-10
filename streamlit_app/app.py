@@ -2,27 +2,25 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from datetime import datetime, timedelta
-import requests
+from datetime import datetime
 import folium
 from streamlit_folium import st_folium
 import streamlit as st
 import streamlit.components.v1 as components
-from crewai import Crew, Process
 
 import time as _time
 
-from crewai import LLM
-from core.config import MODEL, ANTHROPIC_API_KEY
+from core.config import MODEL
 from core.email_sender import send_itinerary_email
 from core.sms_sender import send_itinerary_sms
 from core.guard import validate_destination
+from core.routing import fetch_day_route, fetch_all_routes
+from core.map_builder import DAY_COLOURS, day_label, build_map, save_map
+from core.crew_runner import run_crew, trim_to_visit_budget
 
 
 def show_banner(message: str, level: str = "success") -> None:
     st.session_state["banner"] = {"message": message, "level": level, "ts": _time.time()}
-from core.agents import make_researcher, make_optimizer, make_planner
-from core.tasks import make_research_task, make_optimization_task, make_planning_task
 from core.models import Itinerary
 from crewai.types.usage_metrics import UsageMetrics
 
@@ -60,7 +58,17 @@ st.title("✈️ Custom Trip Advisor")
 with st.sidebar:
     st.header("Plan your trip")
 
-    destination = st.text_input("Destination", placeholder="e.g. Japan, Italy, Peru")
+    def _capitalize_destination():
+        val = st.session_state.get("destination_input", "")
+        if val:
+            st.session_state["destination_input"] = val[0].upper() + val[1:]
+
+    destination = st.text_input(
+        "Destination",
+        placeholder="e.g. Japan, Italy, Peru",
+        key="destination_input",
+        on_change=_capitalize_destination,
+    )
 
     col1, col2 = st.columns(2)
     with col1:
@@ -119,138 +127,7 @@ with st.sidebar:
         selected_file = None
 
 
-# ── Day colour palette ─────────────────────────────────────────────────────────
-_DAY_COLOURS = [
-    "#E74C3C",  # red
-    "#3498DB",  # blue
-    "#2ECC71",  # green
-    "#9B59B6",  # purple
-    "#E67E22",  # orange
-    "#1ABC9C",  # teal
-    "#E91E63",  # pink
-    "#34495E",  # dark slate
-    "#F39C12",  # amber
-    "#00BCD4",  # cyan
-]
-
-def _day_label(day_number: int) -> str:
-    if day_number <= 9:
-        return str(day_number)
-    return chr(ord("A") + day_number - 10)
-
-
-# ── OSRM road routing ──────────────────────────────────────────────────────────
-
-def fetch_day_route(attractions) -> dict | None:
-    """Fetch real driving route from OSRM for a day's attractions."""
-    located = [a for a in attractions if a.lat is not None and a.lon is not None]
-    if len(located) < 2:
-        return None
-    coords = ";".join(f"{a.lon},{a.lat}" for a in located)
-    try:
-        resp = requests.get(
-            f"http://router.project-osrm.org/route/v1/driving/{coords}",
-            params={"overview": "full", "geometries": "geojson", "steps": "false"},
-            timeout=10,
-        )
-        data = resp.json()
-        if data.get("code") != "Ok":
-            return None
-        route = data["routes"][0]
-        return {
-            "geometry": route["geometry"]["coordinates"],
-            "legs": [
-                {"distance_m": leg["distance"], "duration_s": leg["duration"]}
-                for leg in route["legs"]
-            ],
-        }
-    except Exception:
-        return None
-
-
-def trim_to_visit_budget(itinerary: Itinerary, hours_per_day: float) -> Itinerary:
-    """Remove trailing attractions from any day whose visit time exceeds the budget."""
-    max_min = int(hours_per_day * 60)
-    for day in itinerary.days:
-        while len(day.attractions) > 1:
-            if sum(a.duration_min for a in day.attractions) <= max_min:
-                break
-            day.attractions.pop()
-    return itinerary
-
-
-def fetch_all_routes(itinerary: Itinerary) -> dict:
-    """Return {day_number: route_data} for every day with ≥2 attractions."""
-    routes = {}
-    for day in itinerary.days:
-        route = fetch_day_route(day.attractions)
-        if route:
-            routes[day.day_number] = route
-    return routes
-
-
-# ── Map builder ───────────────────────────────────────────────────────────────
-
-def build_map(itinerary: Itinerary, routes: dict) -> folium.Map:
-    all_lats = [a.lat for d in itinerary.days for a in d.attractions if a.lat is not None]
-    all_lons = [a.lon for d in itinerary.days for a in d.attractions if a.lon is not None]
-    centre = (sum(all_lats) / len(all_lats), sum(all_lons) / len(all_lons)) if all_lats else (20, 0)
-
-    m = folium.Map(location=centre, zoom_start=7, control_scale=True)
-
-    for day in itinerary.days:
-        colour = _DAY_COLOURS[(day.day_number - 1) % len(_DAY_COLOURS)]
-        label  = _day_label(day.day_number)
-
-        if day.day_number in routes:
-            road_coords = [(lat, lon) for lon, lat in routes[day.day_number]["geometry"]]
-            total_drive_s = sum(l["duration_s"] for l in routes[day.day_number]["legs"])
-            total_drive_min = round(total_drive_s / 60)
-            folium.PolyLine(
-                road_coords,
-                color=colour,
-                weight=4,
-                opacity=0.8,
-                tooltip=f"Day {day.day_number}: {day.title} · {total_drive_min} min driving",
-            ).add_to(m)
-        else:
-            coords = [(a.lat, a.lon) for a in day.attractions if a.lat is not None and a.lon is not None]
-            if len(coords) > 1:
-                folium.PolyLine(coords, color=colour, weight=3, opacity=0.6,
-                                tooltip=f"Day {day.day_number}: {day.title}").add_to(m)
-
-        for attr in day.attractions:
-            if attr.lat is None or attr.lon is None:
-                continue
-            folium.Marker(
-                location=(attr.lat, attr.lon),
-                popup=folium.Popup(
-                    f"<b>{attr.place}</b><br>Day {day.day_number} · {attr.time}<br>{attr.duration_min} min",
-                    max_width=220,
-                ),
-                tooltip=attr.place,
-                icon=folium.DivIcon(
-                    html=(
-                        f'<div style="background:{colour};color:white;border-radius:50%;'
-                        f'width:28px;height:28px;display:flex;align-items:center;'
-                        f'justify-content:center;font-weight:bold;font-size:13px;'
-                        f'border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4);">'
-                        f'{label}</div>'
-                    ),
-                    icon_size=(28, 28),
-                    icon_anchor=(14, 14),
-                ),
-            ).add_to(m)
-
-    return m
-
-
-def save_map(itinerary: Itinerary, routes: dict) -> None:
-    """Build the map and save it as a standalone HTML file in the static folder."""
-    m = build_map(itinerary, routes)
-    static_dir = Path(__file__).parent / "static"
-    static_dir.mkdir(exist_ok=True)
-    m.save(str(static_dir / "map.html"))
+_STATIC_DIR = Path(__file__).parent / "static"
 
 
 # ── Itinerary renderer ─────────────────────────────────────────────────────────
@@ -377,40 +254,13 @@ def render_usage(usage: UsageMetrics, model: str) -> None:
         c4.metric("Total cost (USD)",  f"${total:.6f}")
 
 
-# ── Crew runner ────────────────────────────────────────────────────────────────
-
-def run_crew(destination: str, start_dt: datetime, end_dt: datetime,
-             explore: int, hours_per_day: float) -> tuple:
-    START_DATE = start_dt.strftime("%Y-%m-%d")
-    END_DATE   = end_dt.strftime("%Y-%m-%d")
-    date_range = [(start_dt + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(explore)]
-
-    llm = LLM(model=MODEL, temperature=0.3, max_tokens=16000)
-    researcher        = make_researcher(destination, llm)
-    optimizer         = make_optimizer(destination, explore, hours_per_day, llm)
-    planner           = make_planner(destination, explore, START_DATE, hours_per_day, llm)
-    research_task     = make_research_task(researcher, destination, explore, date_range, hours_per_day)
-    optimization_task = make_optimization_task(optimizer, research_task, destination, explore, hours_per_day)
-    planning_task     = make_planning_task(
-        planner, optimization_task, destination,
-        START_DATE, END_DATE, explore, date_range, hours_per_day,
-    )
-    crew = Crew(
-        agents=[researcher, optimizer, planner],
-        tasks=[research_task, optimization_task, planning_task],
-        process=Process.sequential,
-        verbose=False,
-    )
-    result = crew.kickoff()
-    return result.pydantic, result.token_usage
-
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 if load_btn and selected_file:
     try:
         itinerary = Itinerary.model_validate_json(selected_file.read_text())
         routes = fetch_all_routes(itinerary)
-        save_map(itinerary, routes)
+        save_map(itinerary, routes, _STATIC_DIR)
         st.session_state["itinerary"] = itinerary
         st.session_state["usage"]     = None
         st.session_state["routes"]    = routes
@@ -442,7 +292,7 @@ if generate:
                         itinerary, usage = run_crew(destination, start_dt, end_dt, explore_days, hours_per_day)
                         itinerary = trim_to_visit_budget(itinerary, hours_per_day)
                         routes = fetch_all_routes(itinerary)
-                        save_map(itinerary, routes)
+                        save_map(itinerary, routes, _STATIC_DIR)
                         last_error = None
                         break
                     except Exception as e:

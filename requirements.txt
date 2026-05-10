@@ -1,11 +1,20 @@
+# ── Common — required by both Streamlit and FastAPI ───────────────────────────
 crewai
 anthropic
 python-dotenv
-streamlit
 folium
-streamlit-folium
 resend
 twilio
+
+# ── Streamlit ─────────────────────────────────────────────────────────────────
+streamlit
+streamlit-folium
+
+# ── FastAPI (REST API + Web UI) ───────────────────────────────────────────────
 fastapi
 uvicorn
+jinja2
+python-multipart
+
+# ── FastAPI only — Speech-to-text ─────────────────────────────────────────────
 faster-whisper

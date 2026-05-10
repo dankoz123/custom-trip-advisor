@@ -1,0 +1,5 @@
+{% if success %}
+<div class="msg msg-success">✅ Email sent to {{ to_address }}</div>
+{% else %}
+<div class="msg msg-error">❌ Failed to send email: {{ error }}</div>
+{% endif %}

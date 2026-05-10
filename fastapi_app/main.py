@@ -1,4 +1,5 @@
 import sys
+import json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -9,6 +10,7 @@ from core.guard import validate_destination
 from core.transcriber import transcribe
 from core.models import Itinerary
 from core.email_sender import send_itinerary_email
+from core.crew_runner import run_crew, trim_to_visit_budget
 from fastapi_app.schemas import (
     ValidateRequest, ValidateResponse,
     GenerateRequest, EmailRequest,
@@ -22,55 +24,6 @@ app = FastAPI(
 )
 
 ITINERARY_DIR = Path(__file__).parent.parent / "itinerary"
-
-
-# ── Helpers ────────────────────────────────────────────────────────────────────
-def _run_crew(destination: str, start_date, end_date, hours_per_day: int) -> Itinerary:
-    from crewai import Crew, Process, LLM
-    from datetime import timedelta
-    from core.config import MODEL
-    from core.agents import make_researcher, make_optimizer, make_planner
-    from core.tasks import make_research_task, make_optimization_task, make_planning_task
-
-    start_dt   = datetime.combine(start_date, datetime.min.time())
-    end_dt     = datetime.combine(end_date,   datetime.min.time())
-    total_days = (end_dt - start_dt).days + 1
-    START_DATE = start_dt.strftime("%Y-%m-%d")
-    END_DATE   = end_dt.strftime("%Y-%m-%d")
-    date_range = [(start_dt + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(total_days)]
-
-    llm        = LLM(model=MODEL, temperature=0.3, max_tokens=16000)
-    researcher = make_researcher(destination, llm)
-    optimizer  = make_optimizer(destination, total_days, hours_per_day, llm)
-    planner    = make_planner(destination, total_days, START_DATE, hours_per_day, llm)
-
-    research_task     = make_research_task(researcher, destination, total_days, date_range, hours_per_day)
-    optimization_task = make_optimization_task(optimizer, research_task, destination, total_days, hours_per_day)
-    planning_task     = make_planning_task(
-        planner, optimization_task, destination,
-        START_DATE, END_DATE, total_days, date_range, hours_per_day,
-    )
-    crew   = Crew(
-        agents=[researcher, optimizer, planner],
-        tasks=[research_task, optimization_task, planning_task],
-        process=Process.sequential,
-        verbose=False,
-    )
-    result = crew.kickoff()
-    return result.pydantic
-
-
-def _trim(itinerary: Itinerary, hours_per_day: int) -> Itinerary:
-    max_min = hours_per_day * 60
-    for day in itinerary.days:
-        total = 0
-        kept  = []
-        for a in day.attractions:
-            if total + a.duration_min <= max_min:
-                kept.append(a)
-                total += a.duration_min
-        day.attractions = kept
-    return itinerary
 
 
 def _save(itinerary: Itinerary) -> Path:
@@ -98,11 +51,15 @@ def generate(body: GenerateRequest):
     if not is_valid:
         raise HTTPException(status_code=422, detail=f'Invalid destination: {reason}')
 
+    start_dt = datetime.combine(body.start_date, datetime.min.time())
+    end_dt   = datetime.combine(body.end_date,   datetime.min.time())
+    total_days = (end_dt - start_dt).days + 1
+
     last_error = None
     for attempt in range(1, 4):
         try:
-            itinerary = _run_crew(body.destination, body.start_date, body.end_date, body.hours_per_day)
-            itinerary = _trim(itinerary, body.hours_per_day)
+            itinerary, _ = run_crew(body.destination, start_dt, end_dt, total_days, body.hours_per_day)
+            itinerary = trim_to_visit_budget(itinerary, body.hours_per_day)
             _save(itinerary)
             return itinerary
         except Exception as e:
@@ -119,7 +76,6 @@ def list_itineraries():
     result = []
     for f in files:
         try:
-            import json
             d = json.loads(f.read_text())
             result.append({
                 "filename": f.name,

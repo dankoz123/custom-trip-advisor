@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block sidebar %}
+<h2>Plan your trip</h2>
+
+<form id="generate-form"
+      hx-post="/generate"
+      hx-target="#result"
+      hx-swap="innerHTML"
+      hx-indicator="#spinner">
+
+    <div class="form-group">
+        <label for="destination">Destination</label>
+        <input type="text" id="destination" name="destination"
+               placeholder="e.g. Japan, Italy, Peru" required>
+    </div>
+
+    <div class="form-group">
+        <label for="start_date">Start date</label>
+        <input type="text" id="start_date" name="start_date" required>
+    </div>
+
+    <div class="form-group">
+        <label for="end_date">End date</label>
+        <input type="text" id="end_date" name="end_date" required>
+    </div>
+
+    <div class="form-group">
+        <label>
+            Days to explore &mdash; <span class="range-value" id="days-val">1</span>
+        </label>
+        <input type="range" id="explore_days" name="explore_days"
+               min="1" max="1" value="1"
+               oninput="document.getElementById('days-val').textContent=this.value">
+    </div>
+
+    <div class="form-group">
+        <label class="tooltip-label">
+            Hours to explore per day &mdash; <span class="range-value" id="hours-val">8</span>h
+            <span class="tooltip-icon" title="Visits per day will be between 90% and 100% of this limit. Driving time is excluded.">ⓘ</span>
+        </label>
+        <input type="range" id="hours_per_day" name="hours_per_day"
+               min="1" max="12" value="8"
+               oninput="document.getElementById('hours-val').textContent=this.value">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Generate Itinerary</button>
+</form>
+
+<div id="spinner">
+    <div class="spin"></div> Generating itinerary…
+</div>
+
+<hr>
+
+<h2>Load saved itinerary</h2>
+{% if saved %}
+<form hx-post="/load"
+      hx-target="#result"
+      hx-swap="innerHTML"
+      hx-indicator="#spinner">
+    <div class="form-group">
+        <select name="filename">
+            {% for s in saved %}
+            <option value="{{ s.filename }}">
+                {{ s.destination.upper() }} · {{ s.start_date }} · {{ s.total_days }} days
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-secondary btn-sm" style="margin-top:0.5rem;width:100%">Load</button>
+</form>
+{% else %}
+<p style="font-size:0.85rem;color:#94a3b8;">No saved itineraries found.</p>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const today = new Date().toISOString().split('T')[0];
+
+    function updateSliders() {
+        const start = document.getElementById('start_date').value;
+        const end   = document.getElementById('end_date').value;
+        if (!start || !end) return;
+        const days = Math.max(1, Math.round((new Date(end) - new Date(start)) / 86400000) + 1);
+        const slider = document.getElementById('explore_days');
+        slider.max   = days;
+        slider.value = days;
+        document.getElementById('days-val').textContent = days;
+    }
+
+    const fpOpts = {
+        dateFormat: "Y-m-d",
+        altInput:   true,
+        altFormat:  "d/m/Y",
+        defaultDate: today,
+        onChange:   updateSliders,
+    };
+
+    flatpickr("#start_date", fpOpts);
+    flatpickr("#end_date",   fpOpts);
+    updateSliders();
+
+    const dest = document.getElementById('destination');
+    function capitalizeFirst() {
+        if (dest.value) dest.value = dest.value.charAt(0).toUpperCase() + dest.value.slice(1);
+    }
+    dest.addEventListener('blur', capitalizeFirst);
+    document.getElementById('generate-form').addEventListener('submit', capitalizeFirst);
+
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div id="result">
+    <p style="color:#94a3b8;">Fill in the form and click <strong>Generate Itinerary</strong> to get started.</p>
+</div>
+{% endblock %}

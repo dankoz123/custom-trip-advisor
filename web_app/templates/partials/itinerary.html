@@ -1,0 +1,94 @@
+{% if error %}
+<div class="msg msg-error">{{ error }}</div>
+{% else %}
+<div class="itinerary-header">
+    <h2>{{ itinerary.destination }}</h2>
+    <p>📅 {{ itinerary.start_date }} → {{ itinerary.end_date }} &nbsp;·&nbsp; {{ itinerary.total_days }} days</p>
+</div>
+
+{% for d in days %}
+<div class="day-card">
+    <div class="day-title" style="border-left: 4px solid {{ d.colour }}; padding-left: 0.6rem;">
+        Day {{ d.day.day_number }} &nbsp;·&nbsp; {{ d.day.date }} &nbsp;·&nbsp; {{ d.day.title }}
+    </div>
+    <div class="day-desc">{{ d.day.description }}</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Place</th>
+                <th>Duration</th>
+                <th>Source</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in d.rows %}
+            {% if row.type == "attraction" %}
+            <tr>
+                <td>{{ row.attr.time }}</td>
+                <td>{{ row.attr.place }}</td>
+                <td>{{ row.attr.duration_min }} min</td>
+                <td><a href="{{ row.attr.source }}" target="_blank">link</a></td>
+            </tr>
+            {% else %}
+            <tr class="drive-row">
+                <td colspan="4">🚗 &nbsp;{{ row.drive_min }} min &nbsp;·&nbsp; {{ row.drive_km }} km</td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="day-totals">
+        ⏱ Exploring: <strong>{{ d.total_visit // 60 }}h {{ "%02d" | format(d.total_visit % 60) }}min</strong>
+        ({{ d.day.attractions | length }} attractions)
+        {% if d.total_drive > 0 %}
+         &nbsp;+&nbsp; 🚗 {{ d.total_drive }} min driving (additional)
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+<div class="actions">
+    <a href="/static/map.html" target="_blank" class="btn btn-primary">🗺️ Open Trip Map</a>
+
+    <div>
+        <form hx-post="/email"
+              hx-target="#email-result"
+              hx-swap="innerHTML">
+            <input type="hidden" name="filename" value="{{ filename }}">
+            <div class="email-inline">
+                <input type="email" name="to_address" placeholder="name@example.com" required>
+                <button type="submit" class="btn btn-primary btn-sm">📧 Send Email</button>
+            </div>
+        </form>
+        <div id="email-result"></div>
+    </div>
+</div>
+
+{% if usage %}
+<div class="usage-panel">
+    <div class="usage-title">Usage &amp; Cost</div>
+    <div class="usage-model">Model: <code>{{ usage.model }}</code></div>
+    <div class="usage-metrics">
+        <div class="usage-metric">
+            <div class="usage-metric-label">Prompt tokens</div>
+            <div class="usage-metric-value">{{ "{:,}".format(usage.prompt_tokens) }}</div>
+        </div>
+        <div class="usage-metric">
+            <div class="usage-metric-label">Completion tokens</div>
+            <div class="usage-metric-value">{{ "{:,}".format(usage.completion_tokens) }}</div>
+        </div>
+        <div class="usage-metric">
+            <div class="usage-metric-label">Total tokens</div>
+            <div class="usage-metric-value">{{ "{:,}".format(usage.total_tokens) }}</div>
+        </div>
+        <div class="usage-metric">
+            <div class="usage-metric-label">Total cost (USD)</div>
+            <div class="usage-metric-value">${{ "%.6f" | format(usage.total_cost) }}</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
