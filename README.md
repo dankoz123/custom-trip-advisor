@@ -215,6 +215,22 @@ Opens at `http://localhost:8001`.
 
 ---
 
+## Language model
+
+All AI tasks in this project use **Claude Haiku** (`claude-haiku-4-5-20251001`) via the Anthropic API, accessed through CrewAI's LiteLLM integration using the model ID `anthropic/claude-haiku-4-5-20251001`.
+
+Claude Haiku is used for three distinct purposes:
+
+| Purpose | Where | Notes |
+|---|---|---|
+| **Destination validation** | `core/guard.py` | Guard model — single API call via Anthropic SDK directly; fast, cheap |
+| **Itinerary research** | `core/agents.py` — Researcher agent | Searches for attractions, opening hours, visit durations |
+| **Route optimisation & planning** | `core/agents.py` — Optimizer + Planner agents | Orders attractions, enforces time budget, formats the final itinerary |
+
+The model is configured in `.env` via `LLM_MODEL=anthropic/claude-haiku-4-5-20251001` and loaded in `core/config.py`. A fresh LLM instance is created per generation run to keep token usage metrics isolated to that call.
+
+---
+
 ## Technology stack
 
 | Component | Technology |
