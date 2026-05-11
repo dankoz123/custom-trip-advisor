@@ -158,8 +158,14 @@ pip install -r requirements.txt
 
 ### Streamlit version
 
+With virtual environment activated:
 ```bash
-streamlit run streamlit_app/app.py
+source trip-env/bin/activate && streamlit run streamlit_app/app.py
+```
+
+Or without activating:
+```bash
+./trip-env/bin/streamlit run streamlit_app/app.py
 ```
 
 Opens automatically at `http://localhost:8501`.
@@ -172,8 +178,14 @@ The FastAPI version has two separate servers that run independently — the **RE
 
 #### REST API (with interactive docs)
 
+With virtual environment activated:
 ```bash
-uvicorn fastapi_app.main:app --reload --port 8000
+source trip-env/bin/activate && uvicorn fastapi_app.main:app --reload --port 8000
+```
+
+Or without activating:
+```bash
+./trip-env/bin/uvicorn fastapi_app.main:app --reload --port 8000
 ```
 
 - Interactive Swagger docs: `http://localhost:8000/docs`
@@ -183,8 +195,14 @@ This is the best way to explore and test each endpoint individually.
 
 #### Web UI
 
+With virtual environment activated:
 ```bash
-uvicorn web_app.main:app --reload --port 8001
+source trip-env/bin/activate && uvicorn web_app.main:app --reload --port 8001
+```
+
+Or without activating:
+```bash
+./trip-env/bin/uvicorn web_app.main:app --reload --port 8001
 ```
 
 Opens at `http://localhost:8001`.
