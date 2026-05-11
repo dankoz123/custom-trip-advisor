@@ -1,2 +1,5 @@
 [server]
 enableStaticServing = true
+
+[logger]
+level = "error"
