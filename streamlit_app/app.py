@@ -14,7 +14,7 @@ from core.config import MODEL
 from core.email_sender import send_itinerary_email
 from core.sms_sender import send_itinerary_sms
 from core.guard import validate_destination
-from core.routing import fetch_day_route, fetch_all_routes
+from core.routing import fetch_day_route, fetch_all_routes, fetch_intercity_routes
 from core.map_builder import DAY_COLOURS, day_label, build_map, save_map
 from core.crew_runner import run_crew, trim_to_visit_budget
 
@@ -132,7 +132,8 @@ _STATIC_DIR = Path(__file__).parent / "static"
 
 # ── Itinerary renderer ─────────────────────────────────────────────────────────
 
-def render_itinerary(itinerary: Itinerary, routes: dict) -> None:
+def render_itinerary(itinerary: Itinerary, routes: dict,
+                     intercity_routes: dict | None = None) -> None:
     st.markdown(
         f"### {itinerary.destination} &nbsp;·&nbsp; "
         f"{itinerary.start_date} → {itinerary.end_date} &nbsp;·&nbsp; "
@@ -182,7 +183,23 @@ def render_itinerary(itinerary: Itinerary, routes: dict) -> None:
             f"({len(day.attractions)} attractions)"
             f"{drive_part}"
         )
-        st.write("")
+
+        ic = (intercity_routes or {}).get(day.day_number)
+        if ic:
+            ic_min = round(ic["legs"][0]["duration_s"] / 60)
+            ic_km  = round(ic["legs"][0]["distance_m"] / 1000, 1)
+            st.markdown(
+                f'<div style="background:#f1f5f9;border-left:4px solid #64748b;'
+                f'border-radius:0 6px 6px 0;padding:0.5rem 1rem;'
+                f'font-size:0.875rem;color:#475569;margin:0.5rem 0 0.75rem 0;">'
+                f'🚗 Travel to next city &nbsp;·&nbsp; '
+                f'<strong>{ic["from_place"]}</strong> → <strong>{ic["to_place"]}</strong>'
+                f'&nbsp;·&nbsp; {ic_km} km &nbsp;·&nbsp; ~{ic_min} min'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.write("")
 
     st.divider()
     col_map, col_email, col_sms = st.columns(3)
@@ -258,12 +275,14 @@ def render_usage(usage: UsageMetrics, model: str) -> None:
 # ── Main ───────────────────────────────────────────────────────────────────────
 if load_btn and selected_file:
     try:
-        itinerary = Itinerary.model_validate_json(selected_file.read_text())
-        routes = fetch_all_routes(itinerary)
-        save_map(itinerary, routes, _STATIC_DIR)
-        st.session_state["itinerary"] = itinerary
-        st.session_state["usage"]     = None
-        st.session_state["routes"]    = routes
+        itinerary        = Itinerary.model_validate_json(selected_file.read_text())
+        routes           = fetch_all_routes(itinerary)
+        intercity_routes = fetch_intercity_routes(itinerary)
+        save_map(itinerary, routes, _STATIC_DIR, intercity_routes)
+        st.session_state["itinerary"]        = itinerary
+        st.session_state["usage"]            = None
+        st.session_state["routes"]           = routes
+        st.session_state["intercity_routes"] = intercity_routes
     except Exception as e:
         st.error(f"Could not load itinerary: {e}")
 
@@ -290,9 +309,10 @@ if generate:
                 for attempt in range(1, 4):
                     try:
                         itinerary, usage = run_crew(destination, start_dt, end_dt, explore_days, hours_per_day)
-                        itinerary = trim_to_visit_budget(itinerary, hours_per_day)
-                        routes = fetch_all_routes(itinerary)
-                        save_map(itinerary, routes, _STATIC_DIR)
+                        itinerary        = trim_to_visit_budget(itinerary, hours_per_day)
+                        routes           = fetch_all_routes(itinerary)
+                        intercity_routes = fetch_intercity_routes(itinerary)
+                        save_map(itinerary, routes, _STATIC_DIR, intercity_routes)
                         last_error = None
                         break
                     except Exception as e:
@@ -303,9 +323,10 @@ if generate:
                     st.error(f"Could not generate itinerary after 3 attempts: {last_error}")
                     st.stop()
 
-            st.session_state["itinerary"] = itinerary
-            st.session_state["usage"]     = usage
-            st.session_state["routes"]    = routes
+            st.session_state["itinerary"]        = itinerary
+            st.session_state["usage"]            = usage
+            st.session_state["routes"]           = routes
+            st.session_state["intercity_routes"] = intercity_routes
 
             output_file = f"itinerary_{destination.replace(' ', '_')}_{start_date}.json"
             itinerary_dir = Path(__file__).parent.parent / "itinerary"
@@ -332,12 +353,13 @@ def _banner_watchdog():
 _banner_watchdog()
 
 if "itinerary" in st.session_state:
-    itinerary = st.session_state["itinerary"]
-    usage     = st.session_state["usage"]
-    routes    = st.session_state.get("routes", {})
+    itinerary        = st.session_state["itinerary"]
+    usage            = st.session_state["usage"]
+    routes           = st.session_state.get("routes", {})
+    intercity_routes = st.session_state.get("intercity_routes", {})
 
     st.subheader("📅 Itinerary")
-    render_itinerary(itinerary, routes)
+    render_itinerary(itinerary, routes, intercity_routes)
 
     if usage:
         render_usage(usage, MODEL)

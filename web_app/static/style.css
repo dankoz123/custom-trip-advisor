@@ -135,11 +135,21 @@ a  { color: #2563eb; }
 .day-totals { font-size: 0.85rem; color: #64748b; margin-top: 0.75rem; }
 
 /* ── Action buttons ── */
-.actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; align-items: flex-start; }
-.email-inline { display: flex; gap: 0.5rem; align-items: center; }
-.email-inline input { width: 220px; }
+.actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; align-items: flex-start; }
+.btn-action { flex: 1; }
 
 #email-result { margin-top: 0.5rem; }
+
+/* ── Intercity travel ── */
+.intercity-travel {
+    margin: 0.75rem 0 0 0;
+    padding: 0.6rem 1rem;
+    background: #f1f5f9;
+    border-left: 4px solid #64748b;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.875rem;
+    color: #475569;
+}
 
 /* ── Date hint ── */
 small.hint { color: #94a3b8; font-weight: 400; font-size: 0.78rem; }
@@ -166,6 +176,10 @@ small.hint { color: #94a3b8; font-weight: 400; font-size: 0.78rem; }
     white-space: normal;
     z-index: 10;
     line-height: 1.4;
+}
+.tooltip-icon--left:hover::after {
+    left: auto;
+    right: 1.2rem;
 }
 
 /* ── Usage panel ── */

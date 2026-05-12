@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 from core.guard import validate_destination
 from core.models import Itinerary
 from core.email_sender import send_itinerary_email
-from core.routing import fetch_all_routes
+from core.routing import fetch_all_routes, fetch_intercity_routes
 from core.map_builder import DAY_COLOURS, save_map
 from core.crew_runner import run_crew, trim_to_visit_budget
 from core.config import MODEL
@@ -53,7 +53,8 @@ def _save_itinerary(itinerary: Itinerary) -> str:
     return filename
 
 
-def _build_day_data(itinerary: Itinerary, routes: dict) -> list[dict]:
+def _build_day_data(itinerary: Itinerary, routes: dict,
+                    intercity_routes: dict | None = None) -> list[dict]:
     days = []
     for day in itinerary.days:
         day_route = routes.get(day.day_number)
@@ -69,12 +70,24 @@ def _build_day_data(itinerary: Itinerary, routes: dict) -> list[dict]:
                 drive_km  = leg["distance_m"] / 1000
                 total_drive += drive_min
                 rows.append({"type": "drive", "drive_min": drive_min, "drive_km": round(drive_km, 1)})
+
+        ic = (intercity_routes or {}).get(day.day_number)
+        intercity_travel = None
+        if ic:
+            intercity_travel = {
+                "from_place": ic["from_place"],
+                "to_place":   ic["to_place"],
+                "drive_min":  round(ic["legs"][0]["duration_s"] / 60),
+                "drive_km":   round(ic["legs"][0]["distance_m"] / 1000, 1),
+            }
+
         days.append({
-            "day":         day,
-            "rows":        rows,
-            "total_visit": total_visit,
-            "total_drive": total_drive,
-            "colour":      DAY_COLOURS[(day.day_number - 1) % len(DAY_COLOURS)],
+            "day":              day,
+            "rows":             rows,
+            "total_visit":      total_visit,
+            "total_drive":      total_drive,
+            "colour":           DAY_COLOURS[(day.day_number - 1) % len(DAY_COLOURS)],
+            "intercity_travel": intercity_travel,
         })
     return days
 
@@ -96,10 +109,11 @@ def _calc_usage(usage) -> dict | None:
 
 
 def _render_itinerary(request: Request, itinerary: Itinerary, routes: dict,
-                      filename: str, usage=None) -> HTMLResponse:
+                      filename: str, usage=None,
+                      intercity_routes: dict | None = None) -> HTMLResponse:
     return templates.TemplateResponse(request, "partials/itinerary.html", {
         "itinerary": itinerary,
-        "days":      _build_day_data(itinerary, routes),
+        "days":      _build_day_data(itinerary, routes, intercity_routes),
         "filename":  filename,
         "usage":     _calc_usage(usage),
         "error":     None,
@@ -145,12 +159,13 @@ def generate(
     last_error = None
     for attempt in range(1, 4):
         try:
-            itinerary, usage = run_crew(destination, start_dt, end_dt, explore_days, hours_per_day)
-            itinerary = trim_to_visit_budget(itinerary, hours_per_day)
-            routes    = fetch_all_routes(itinerary)
-            save_map(itinerary, routes, STATIC_DIR)
-            filename  = _save_itinerary(itinerary)
-            return _render_itinerary(request, itinerary, routes, filename, usage)
+            itinerary, usage    = run_crew(destination, start_dt, end_dt, explore_days, hours_per_day)
+            itinerary           = trim_to_visit_budget(itinerary, hours_per_day)
+            routes              = fetch_all_routes(itinerary)
+            intercity_routes    = fetch_intercity_routes(itinerary)
+            save_map(itinerary, routes, STATIC_DIR, intercity_routes)
+            filename            = _save_itinerary(itinerary)
+            return _render_itinerary(request, itinerary, routes, filename, usage, intercity_routes)
         except Exception as e:
             last_error = e
 
@@ -163,10 +178,12 @@ def load(request: Request, filename: str = Form(...)):
     if not path.exists():
         return _render_error(request, "Itinerary file not found.")
     try:
-        itinerary = Itinerary.model_validate_json(path.read_text())
-        routes    = fetch_all_routes(itinerary)
-        save_map(itinerary, routes, STATIC_DIR)
-        return _render_itinerary(request, itinerary, routes, filename)
+        itinerary        = Itinerary.model_validate_json(path.read_text())
+        routes           = fetch_all_routes(itinerary)
+        intercity_routes = fetch_intercity_routes(itinerary)
+        save_map(itinerary, routes, STATIC_DIR, intercity_routes)
+        return _render_itinerary(request, itinerary, routes, filename,
+                                 intercity_routes=intercity_routes)
     except Exception as e:
         return _render_error(request, f"Could not load itinerary: {e}")
 

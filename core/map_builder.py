@@ -14,7 +14,7 @@ def day_label(day_number: int) -> str:
     return chr(ord("A") + day_number - 10)
 
 
-def build_map(itinerary: Itinerary, routes: dict) -> folium.Map:
+def build_map(itinerary: Itinerary, routes: dict, intercity_routes: dict | None = None) -> folium.Map:
     all_lats = [a.lat for d in itinerary.days for a in d.attractions if a.lat is not None]
     all_lons = [a.lon for d in itinerary.days for a in d.attractions if a.lon is not None]
     centre = (sum(all_lats) / len(all_lats), sum(all_lons) / len(all_lons)) if all_lats else (20, 0)
@@ -38,6 +38,22 @@ def build_map(itinerary: Itinerary, routes: dict) -> folium.Map:
             if len(coords) > 1:
                 folium.PolyLine(coords, color=colour, weight=3, opacity=0.6,
                                 tooltip=f"Day {day.day_number}: {day.title}").add_to(m)
+
+        if intercity_routes and day.day_number in intercity_routes:
+            ic = intercity_routes[day.day_number]
+            ic_coords = [(lat, lon) for lon, lat in ic["geometry"]]
+            ic_km  = ic["legs"][0]["distance_m"] / 1000
+            ic_min = round(ic["legs"][0]["duration_s"] / 60)
+            folium.PolyLine(
+                ic_coords,
+                color="#f97316",
+                weight=5,
+                opacity=0.9,
+                dash_array="10 6",
+                tooltip=f"Day {day.day_number} → Day {day.day_number + 1}: "
+                        f"{ic['from_place']} → {ic['to_place']} · "
+                        f"{ic_km:.0f} km · ~{ic_min} min",
+            ).add_to(m)
 
         for attr in day.attractions:
             if attr.lat is None or attr.lon is None:
@@ -65,7 +81,8 @@ def build_map(itinerary: Itinerary, routes: dict) -> folium.Map:
     return m
 
 
-def save_map(itinerary: Itinerary, routes: dict, static_dir: Path) -> None:
-    m = build_map(itinerary, routes)
+def save_map(itinerary: Itinerary, routes: dict, static_dir: Path,
+             intercity_routes: dict | None = None) -> None:
+    m = build_map(itinerary, routes, intercity_routes)
     static_dir.mkdir(exist_ok=True)
     m.save(str(static_dir / "map.html"))

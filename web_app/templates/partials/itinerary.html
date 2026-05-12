@@ -40,7 +40,7 @@
         </tbody>
     </table>
 
-    <div class="day-totals">
+    <div class="day-totals" style="margin-bottom:0.25rem;">
         ⏱ Exploring: <strong>{{ d.total_visit // 60 }}h {{ "%02d" | format(d.total_visit % 60) }}min</strong>
         ({{ d.day.attractions | length }} attractions)
         {% if d.total_drive > 0 %}
@@ -48,19 +48,29 @@
         {% endif %}
     </div>
 </div>
+
+    {% if d.intercity_travel %}
+    <div class="intercity-travel">
+        🚗 Travel to next city &nbsp;·&nbsp;
+        <strong>{{ d.intercity_travel.from_place }}</strong> → <strong>{{ d.intercity_travel.to_place }}</strong>
+        &nbsp;·&nbsp; {{ d.intercity_travel.drive_km }} km &nbsp;·&nbsp; ~{{ d.intercity_travel.drive_min }} min
+    </div>
+    {% endif %}
+</div>
 {% endfor %}
 
 <div class="actions">
-    <a href="/static/map.html" target="_blank" class="btn btn-primary">🗺️ Open Trip Map</a>
+    <a href="/static/map.html" target="_blank" class="btn btn-primary btn-action">🗺️ Open Trip Map</a>
 
-    <div>
+    <div class="btn-action">
         <form hx-post="/email"
               hx-target="#email-result"
               hx-swap="innerHTML">
             <input type="hidden" name="filename" value="{{ filename }}">
-            <div class="email-inline">
-                <input type="email" name="to_address" placeholder="name@example.com" required>
-                <button type="submit" class="btn btn-primary btn-sm">📧 Send Email</button>
+            <button type="submit" class="btn btn-primary" style="width:100%;margin-bottom:0.4rem;">📧 Send Email</button>
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+                <input type="email" name="to_address" placeholder="name@example.com" required style="flex:1;">
+                <span class="tooltip-icon tooltip-icon--left" title="Provide an email address and select the 'Send Email' button">ⓘ</span>
             </div>
         </form>
         <div id="email-result"></div>
