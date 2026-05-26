@@ -20,3 +20,9 @@ class GenerateRequest(BaseModel):
 
 class EmailRequest(BaseModel):
     to_address: str
+
+
+class FindAttractionsRequest(BaseModel):
+    city: str
+    country: str
+    count: int = 10

@@ -5,6 +5,8 @@ python-dotenv
 folium
 resend
 twilio
+shapely
+requests
 
 # ── Streamlit ─────────────────────────────────────────────────────────────────
 streamlit

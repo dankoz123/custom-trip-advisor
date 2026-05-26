@@ -16,7 +16,8 @@ from core.sms_sender import send_itinerary_sms
 from core.guard import validate_destination
 from core.routing import fetch_day_route, fetch_all_routes, fetch_intercity_routes
 from core.map_builder import DAY_COLOURS, day_label, build_map, save_map
-from core.crew_runner import run_crew, trim_to_visit_budget
+from core.crew_runner import run_crew, run_crew_with_attractions, trim_to_visit_budget
+from core.attractions_finder import find_attractions, build_attractions_map, format_for_optimizer
 
 
 def show_banner(message: str, level: str = "success") -> None:
@@ -65,7 +66,8 @@ with st.sidebar:
 
     destination = st.text_input(
         "Destination",
-        placeholder="e.g. Japan, Italy, Peru",
+        placeholder="e.g. Koszalin, Poland",
+        help="Enter the destination as 'City, Country'.",
         key="destination_input",
         on_change=_capitalize_destination,
     )
@@ -283,55 +285,76 @@ if load_btn and selected_file:
         st.session_state["usage"]            = None
         st.session_state["routes"]           = routes
         st.session_state["intercity_routes"] = intercity_routes
+        st.session_state.pop("attractions_result", None)
     except Exception as e:
         st.error(f"Could not load itinerary: {e}")
 
 if generate:
     if not destination:
-        st.error("Please enter a destination.")
+        st.error("Please enter a destination as 'City, Country'.")
+    elif "," not in destination:
+        st.error("Destination must be in 'City, Country' format (e.g. 'Koszalin, Poland').")
     elif end_date < start_date:
         st.error("End date must be on or after start date.")
     elif explore_days is None:
         st.error("Please select valid dates first.")
     else:
-        with st.spinner("Validating destination…"):
-            is_valid, reason = validate_destination(destination)
-        if not is_valid:
-            st.error(f'"{destination}" is not a valid travel destination: {reason}')
-        else:
-            start_dt = datetime.combine(start_date, datetime.min.time())
-            end_dt   = datetime.combine(end_date,   datetime.min.time())
+        city, country = [s.strip() for s in destination.split(",", 1)]
+        start_dt = datetime.combine(start_date, datetime.min.time())
+        end_dt   = datetime.combine(end_date,   datetime.min.time())
 
-            st.session_state.pop("usage", None)
+        # Count = total exploration hours (≈ 1 attraction per hour average)
+        attractions_count = explore_days * hours_per_day
 
-            with st.spinner(f"Planning your {explore_days}-day trip to {destination}…"):
-                last_error = None
-                for attempt in range(1, 4):
-                    try:
-                        itinerary, usage = run_crew(destination, start_dt, end_dt, explore_days, hours_per_day)
-                        itinerary        = trim_to_visit_budget(itinerary, hours_per_day)
-                        routes           = fetch_all_routes(itinerary)
-                        intercity_routes = fetch_intercity_routes(itinerary)
-                        save_map(itinerary, routes, _STATIC_DIR, intercity_routes)
-                        last_error = None
-                        break
-                    except Exception as e:
-                        last_error = e
-                        if attempt < 3:
-                            st.toast(f"Attempt {attempt} failed, retrying…")
-                if last_error:
-                    st.error(f"Could not generate itinerary after 3 attempts: {last_error}")
-                    st.stop()
+        st.session_state.pop("usage", None)
 
-            st.session_state["itinerary"]        = itinerary
-            st.session_state["usage"]            = usage
-            st.session_state["routes"]           = routes
-            st.session_state["intercity_routes"] = intercity_routes
+        # ── Step 1: find verified attractions ─────────────────────────────────
+        with st.spinner(f"Step 1/2: Finding {attractions_count} attractions in {city}, {country}… (typically 3–5 min)"):
+            try:
+                attractions_result = find_attractions(city, country, attractions_count)
+            except Exception as e:
+                st.error(f"Attractions finder failed: {e}")
+                st.stop()
 
-            output_file = f"itinerary_{destination.replace(' ', '_')}_{start_date}.json"
-            itinerary_dir = Path(__file__).parent.parent / "itinerary"
-            itinerary_dir.mkdir(exist_ok=True)
-            (itinerary_dir / output_file).write_text(itinerary.model_dump_json(indent=2))
+        if not attractions_result.attractions:
+            st.error(f"No verifiable attractions found in {city}, {country}.")
+            st.stop()
+
+        attractions_text = format_for_optimizer(attractions_result)
+
+        # ── Step 2: optimize + plan into a multi-day itinerary ────────────────
+        with st.spinner(f"Step 2/2: Planning {explore_days}-day itinerary…"):
+            last_error = None
+            for attempt in range(1, 4):
+                try:
+                    itinerary, usage = run_crew_with_attractions(
+                        attractions_text, destination, start_dt, end_dt,
+                        explore_days, hours_per_day,
+                    )
+                    itinerary        = trim_to_visit_budget(itinerary, hours_per_day)
+                    routes           = fetch_all_routes(itinerary)
+                    intercity_routes = fetch_intercity_routes(itinerary)
+                    save_map(itinerary, routes, _STATIC_DIR, intercity_routes)
+                    last_error = None
+                    break
+                except Exception as e:
+                    last_error = e
+                    if attempt < 3:
+                        st.toast(f"Attempt {attempt} failed, retrying…")
+            if last_error:
+                st.error(f"Could not plan itinerary after 3 attempts: {last_error}")
+                st.stop()
+
+        st.session_state["itinerary"]          = itinerary
+        st.session_state["usage"]              = usage
+        st.session_state["routes"]             = routes
+        st.session_state["intercity_routes"]   = intercity_routes
+        st.session_state["attractions_result"] = attractions_result
+
+        output_file = f"itinerary_{destination.replace(' ', '_').replace(',', '')}_{start_date}.json"
+        itinerary_dir = Path(__file__).parent.parent / "itinerary"
+        itinerary_dir.mkdir(exist_ok=True)
+        (itinerary_dir / output_file).write_text(itinerary.model_dump_json(indent=2))
 
 # ── Notification banner ────────────────────────────────────────────────────────
 _banner_slot = st.empty()
@@ -363,3 +386,4 @@ if "itinerary" in st.session_state:
 
     if usage:
         render_usage(usage, MODEL)
+

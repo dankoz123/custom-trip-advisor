@@ -8,12 +8,14 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 
 from core.guard import validate_destination
 from core.transcriber import transcribe
-from core.models import Itinerary
+from core.models import Itinerary, AttractionsResult
 from core.email_sender import send_itinerary_email
-from core.crew_runner import run_crew, trim_to_visit_budget
+from core.crew_runner import run_crew, run_crew_with_attractions, trim_to_visit_budget
+from core.attractions_finder import find_attractions, format_for_optimizer
 from fastapi_app.schemas import (
     ValidateRequest, ValidateResponse,
     GenerateRequest, EmailRequest,
+    FindAttractionsRequest,
 )
 
 # ── App ────────────────────────────────────────────────────────────────────────
@@ -47,18 +49,40 @@ def generate(body: GenerateRequest):
     if body.end_date < body.start_date:
         raise HTTPException(status_code=400, detail="end_date must be on or after start_date")
 
-    is_valid, reason = validate_destination(body.destination)
-    if not is_valid:
-        raise HTTPException(status_code=422, detail=f'Invalid destination: {reason}')
+    if "," not in body.destination:
+        raise HTTPException(
+            status_code=400,
+            detail="destination must be in 'City, Country' format (e.g. 'Koszalin, Poland')",
+        )
 
-    start_dt = datetime.combine(body.start_date, datetime.min.time())
-    end_dt   = datetime.combine(body.end_date,   datetime.min.time())
-    total_days = (end_dt - start_dt).days + 1
+    city, country     = [s.strip() for s in body.destination.split(",", 1)]
+    start_dt          = datetime.combine(body.start_date, datetime.min.time())
+    end_dt            = datetime.combine(body.end_date,   datetime.min.time())
+    total_days        = (end_dt - start_dt).days + 1
+    attractions_count = total_days * body.hours_per_day
 
+    # Step 1 — find verified attractions (Wikidata + Nominatim + Overpass grounding)
+    try:
+        attractions_result = find_attractions(city, country, attractions_count)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Attractions finder failed: {e}")
+
+    if not attractions_result.attractions:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No verifiable attractions found in {city}, {country}",
+        )
+
+    attractions_text = format_for_optimizer(attractions_result)
+
+    # Step 2 — optimize + plan the multi-day itinerary
     last_error = None
     for attempt in range(1, 4):
         try:
-            itinerary, _ = run_crew(body.destination, start_dt, end_dt, total_days, body.hours_per_day)
+            itinerary, _ = run_crew_with_attractions(
+                attractions_text, body.destination, start_dt, end_dt,
+                total_days, body.hours_per_day,
+            )
             itinerary = trim_to_visit_budget(itinerary, body.hours_per_day)
             _save(itinerary)
             return itinerary
@@ -106,6 +130,17 @@ def email_itinerary(filename: str, body: EmailRequest):
     if not success:
         raise HTTPException(status_code=500, detail=error)
     return {"message": f"Email sent to {body.to_address}"}
+
+
+@app.post("/attractions/find", response_model=AttractionsResult,
+          summary="Find verified attractions for a city (standalone)")
+def find_attractions_endpoint(body: FindAttractionsRequest):
+    if body.count < 1 or body.count > 30:
+        raise HTTPException(status_code=400, detail="count must be between 1 and 30")
+    try:
+        return find_attractions(body.city, body.country, body.count)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Attractions finder failed: {e}")
 
 
 @app.post("/transcribe", summary="Transcribe audio to text")

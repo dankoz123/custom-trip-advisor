@@ -51,6 +51,47 @@ def make_optimization_task(agent, research_task: Task, destination: str,
     )
 
 
+def make_optimization_task_with_attractions(agent, attractions_text: str,
+                                            destination: str, explore_days: int,
+                                            hours_per_day: float) -> Task:
+    """Variant of make_optimization_task that takes pre-loaded attractions text
+    (from attractions_finder) instead of a research-task context. Skips the
+    CrewAI researcher entirely."""
+    max_min = int(hours_per_day * 60)
+    min_min = int(max_min * 0.9)
+    return Task(
+        description=(
+            f"You are given a FIXED, CANONICAL list of pre-verified attractions for {destination}. "
+            f"Every attraction has been confirmed to exist via Wikidata, OpenStreetMap, and "
+            f"Overpass — with precise GPS coordinates inside the city polygon.\n\n"
+            f"{attractions_text}\n\n"
+            f"Your job is to group these attractions into {explore_days} days with zero backtracking.\n\n"
+            "STRICT RULES — VIOLATING ANY OF THESE IS A HARD FAILURE:\n"
+            "- Use ONLY the attractions from the list above. Do NOT add, invent, or include "
+            "any place not in this list — even if it is famous, nearby, or commonly visited.\n"
+            "- Do NOT include attractions from neighbouring towns, villages, beaches, or regions.\n"
+            "- Preserve the EXACT name, lat, lon, duration_min, and source URL for every attraction.\n"
+            "- If the day would otherwise be too short, ACCEPT a shorter day. NEVER fabricate "
+            "attractions to fill a duration target.\n\n"
+            "Grouping guidelines:\n"
+            "1. Cluster attractions by geographic proximity — nearby attractions go on the same day.\n"
+            "2. Order the days so the journey flows logically in one direction "
+            "(e.g. north to south, coast to interior) without revisiting an area.\n"
+            "3. Within each day, sort attractions by walking/travel distance so the "
+            "tourist moves in a single direction rather than zigzagging.\n"
+            f"4. Aim for {min_min}–{max_min} minutes of visiting time per day "
+            f"({hours_per_day * 0.9:.1f}h – {hours_per_day:.1f}h), but you may go SHORTER "
+            "if there are not enough attractions. You may NEVER go longer or invent items.\n\n"
+            "For each day, show the attractions in order with their durations and a running total, "
+            "plus a one-line reason for the grouping."
+        ),
+        expected_output=(
+            f"A {explore_days}-day plan using ONLY the provided attractions, with grouping rationale."
+        ),
+        agent=agent,
+    )
+
+
 def make_planning_task(agent, optimization_task: Task, destination: str,
                        start_date: str, end_date: str,
                        explore_days: int, date_range: list[str],
@@ -74,9 +115,12 @@ def make_planning_task(agent, optimization_task: Task, destination: str,
             "place (full name + city), duration_min (integer), source (full URL), "
             "lat (decimal latitude), lon (decimal longitude)\n"
             "- do NOT reorder attractions — respect the Route Optimizer's sequence exactly\n"
+            "- do NOT add, invent, or include any attraction not provided by the Route Optimizer — "
+            "the Optimizer's list is canonical and complete\n"
             "- schedule realistic travel time gaps between attractions in different areas\n"
-            f"- HARD CONSTRAINT: each day's sum of duration_min must be between "
-            f"{min_min} and {max_min} minutes — no exceptions"
+            f"- TARGET: each day's sum of duration_min should be between "
+            f"{min_min} and {max_min} minutes when possible. If the Optimizer provided fewer "
+            "attractions for a given day, accept a shorter day rather than inventing places."
         ),
         expected_output=(
             f"A single valid JSON object matching the Itinerary schema for {explore_days} days, "
