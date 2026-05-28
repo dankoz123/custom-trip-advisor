@@ -56,14 +56,18 @@ End-to-end pipeline from `City, Country` input through grounded attractions to t
 
 ```
 .
-├── core/                            # Shared AI pipeline — used by BOTH versions
-│   ├── attractions_finder.py        # Wikidata + Nominatim + Overpass grounding (parallel)
-│   ├── agents.py                    # CrewAI agent definitions
-│   ├── tasks.py                     # CrewAI task definitions (incl. attractions-aware variant)
-│   ├── crew_runner.py               # run_crew_with_attractions() — optimizer + planner chain
+├── main.py                          # Legacy interactive CLI runner (uses the original CrewAI Researcher path)
+│
+├── core/                            # Shared AI pipeline — used by ALL versions
+│   ├── attractions_finder.py        # Wikidata + Nominatim + Overpass grounding (parallel) — heart of the new flow
+│   ├── agents.py                    # CrewAI agent definitions (researcher, optimizer, planner)
+│   ├── tasks.py                     # CrewAI task definitions (incl. attractions-aware optimizer variant)
+│   ├── crew_runner.py               # run_crew + run_crew_with_attractions (optimizer + planner chain)
 │   ├── models.py                    # Pydantic models (Itinerary, FoundAttraction, AttractionsResult, …)
 │   ├── config.py                    # Loads .env, exposes MODEL constant
 │   ├── guard.py                     # Destination validation via Claude (legacy — not on the main path)
+│   ├── grounder.py                  # Original coordinate-grounding module (legacy — superseded by attractions_finder.py)
+│   ├── tools.py                     # CrewAI tool wrapper for DuckDuckGo search
 │   ├── transcriber.py               # Speech-to-text via Faster Whisper
 │   ├── routing.py                   # OSRM road-routing calls
 │   ├── map_builder.py               # Folium interactive map builder
@@ -72,10 +76,12 @@ End-to-end pipeline from `City, Country` input through grounded attractions to t
 │   └── sms_sender.py                # Twilio SMS (in development)
 │
 ├── streamlit_app/                   # ── STREAMLIT VERSION ──────────────────
-│   └── app.py                       # Single-file Streamlit UI
+│   ├── app.py                       # Single-file Streamlit UI
+│   └── static/
+│       └── map.html                 # Generated itinerary map (written at runtime)
 │
 ├── fastapi_app/                     # ── FASTAPI VERSION — REST API ─────────
-│   ├── main.py                      # API endpoints (/validate, /generate, …)
+│   ├── main.py                      # API endpoints (/validate, /generate, /attractions/find, …)
 │   └── schemas.py                   # Pydantic request/response schemas
 │
 ├── web_app/                         # ── FASTAPI VERSION — Web UI ───────────
@@ -91,7 +97,9 @@ End-to-end pipeline from `City, Country` input through grounded attractions to t
 │           └── email_result.html    # Email send result (HTMX partial)
 │
 ├── itinerary/                       # Saved itineraries as JSON (git-ignored)
-├── assets/                          # Demo GIF and screenshots
+├── assets/                          # README images
+│   ├── demo-08052026.gif            # Streamlit demo recording
+│   └── process-flow-singlePage.gif  # Single-page process flow diagram (used in README)
 ├── .streamlit/
 │   └── config.toml                  # Enables static file serving for the Streamlit map
 ├── requirements.txt
@@ -100,13 +108,14 @@ End-to-end pipeline from `City, Country` input through grounded attractions to t
 
 ### Which files belong to which version
 
-| File / folder | Streamlit | FastAPI |
-|---|:---:|:---:|
-| `core/` | ✅ | ✅ |
-| `streamlit_app/` | ✅ | — |
-| `.streamlit/` | ✅ | — |
-| `fastapi_app/` | — | ✅ |
-| `web_app/` | — | ✅ |
+| File / folder | CLI (`main.py`) | Streamlit | FastAPI |
+|---|:---:|:---:|:---:|
+| `core/` | ✅ | ✅ | ✅ |
+| `main.py` (root) | ✅ | — | — |
+| `streamlit_app/` | — | ✅ | — |
+| `.streamlit/` | — | ✅ | — |
+| `fastapi_app/` | — | — | ✅ |
+| `web_app/` | — | — | ✅ |
 
 ---
 
@@ -228,6 +237,18 @@ Or without activating:
 Opens at `http://localhost:8001`.
 
 > The REST API and the Web UI are **independent** — the web UI does not call the REST API internally; both use `core/` directly. You do not need to run the REST API to use the Web UI.
+
+---
+
+## Legacy interactive CLI — `main.py`
+
+A terminal-only runner that uses the **original CrewAI Researcher path** (no grounding). Useful for quickly running the optimizer/planner without spinning up Streamlit or FastAPI, but be aware that it bypasses the hallucination-prevention pipeline:
+
+```bash
+source trip-env/bin/activate && python main.py
+```
+
+You'll be prompted interactively for destination and dates.
 
 ---
 
