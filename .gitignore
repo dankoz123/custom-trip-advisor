@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 itinerary_*.txt
 itinerary/
+test_fastapi
