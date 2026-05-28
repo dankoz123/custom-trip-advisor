@@ -24,29 +24,7 @@ The project ships in **two versions** that share the same AI pipeline:
 
 End-to-end pipeline from `City, Country` input through grounded attractions to the final itinerary:
 
-```mermaid
-flowchart TD
-    A[<b>1. User Input</b><br/>City, Country • Dates<br/>Days × Hours per day]:::input
-    A --> B[<b>2. City Polygon Fetch</b><br/>Nominatim admin polygon<br/>shapely point-in-polygon test]:::ground
-    B --> C[<b>3. LLM Seed</b><br/>Claude Sonnet 4.6 • temperature=0<br/>count = days × hours/day]:::ground
-    C --> D[<b>4. Multi-Source Grounding</b><br/>4 workers in parallel]:::ground
-    D --> D1[Wikidata<br/>P625 + P856]:::source
-    D --> D2[Nominatim<br/>free-text + tag]:::source
-    D --> D3[Overpass<br/>Jaccard ≥ 0.40]:::source
-    D1 --> E[<b>5. Reconcile → Filter → Dedup → Refill</b><br/>2+ sources agree ≤150 m → HIGH<br/>drop llm-estimate + low<br/>refill loop ≤ 3 rounds]:::ground
-    D2 --> E
-    D3 --> E
-    E --> F[<b>6. CrewAI Builder</b><br/>Optimizer clusters + orders<br/>Planner emits JSON<br/>no fabrication]:::build
-    F --> G[<b>7. Output</b><br/>Itinerary JSON • Folium map<br/>Optional email / SMS]:::output
-
-    classDef input  fill:#475569,stroke:#1e293b,color:#fff
-    classDef ground fill:#2563eb,stroke:#1e40af,color:#fff
-    classDef source fill:#eef2ff,stroke:#2563eb,color:#1e40af
-    classDef build  fill:#d97706,stroke:#92400e,color:#fff
-    classDef output fill:#059669,stroke:#047857,color:#fff
-```
-
-> Prefer an editable version? See **[process-flow-singlePage.pptx](assets/process-flow-singlePage.pptx)** — the same flow in an editable PowerPoint deck.
+![Process flow](assets/process-flow-singlePage.gif)
 
 ---
 
